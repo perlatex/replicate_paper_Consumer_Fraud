@@ -1404,8 +1404,7 @@ mod %>%
     across(c(Selfish, ZEI), as.factor)
   ) %>% 
   ggplot(aes(x = Selfish, y = estimate)) +
-  geom_col(
-    aes(fill = ZEI), 
+  geom_col(aes(fill = ZEI), 
     position = position_dodge(width = 0.8),
     width = 0.7
   )                           
