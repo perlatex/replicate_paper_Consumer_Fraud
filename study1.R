@@ -15,7 +15,9 @@ d %>%
     M = mean(ZEI)
   )
 
+
 d %>% 
+  mutate(SelfManip = factor(SelfManip, level = c(1, -1))) %>% 
   rstatix::t_test(ZEI ~ SelfManip)
 
 

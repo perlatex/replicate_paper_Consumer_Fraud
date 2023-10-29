@@ -131,12 +131,18 @@ d %>%
 
 
 ```{r, eval=FALSE}
-d %>% 
+d %>%
+  mutate(
+    SelfManip = factor(SelfManip,
+      level = c(1, -1)
+    )
+  ) %>%
   rstatix::t_test(ZEI ~ SelfManip)
 ```
 
 ```{r, echo=FALSE}
 d %>% 
+  mutate(SelfManip = factor(SelfManip, level = c(1, -1))) %>% 
   rstatix::t_test(ZEI ~ SelfManip) %>%  
   flextable::flextable() %>% 
   flextable::autofit() %>% 
@@ -655,15 +661,20 @@ d %>%
 ```
 
 
-<br>
 
 ```{r, eval = FALSE}
-d %>% 
+d %>%
+  mutate(
+    Cond = factor(Cond,
+      level = c(1, -1)
+    )
+  ) %>%
   rstatix::t_test(SelfCks ~ Cond)
 ```
 
 ```{r, echo=FALSE}
 d %>% 
+  mutate(Cond = factor(Cond, level = c(1, -1))) %>% 
   rstatix::t_test(SelfCks ~ Cond) %>% 
   flextable::flextable() %>% 
   flextable::colformat_double(digits = 3) %>% 
@@ -1277,8 +1288,10 @@ d %>%
 <br>
 
 ```{r, eval = FALSE}
-d %>% 
-  mutate(Selfish = factor(Selfish, level = c(1, -1))) %>% 
+d %>%
+  mutate(Selfish = factor(Selfish,
+    level = c(1, -1)
+  )) %>%
   rstatix::t_test(SelfCheck ~ Selfish)
 ```
 

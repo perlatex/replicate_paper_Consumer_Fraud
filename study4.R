@@ -31,7 +31,9 @@ d %>%
 
 
 d %>% 
-  rstatix::t_test(SelfCheck ~ Selfish) 
+  mutate(Selfish = factor(Selfish, level = c(1, -1))) %>% 
+  rstatix::t_test(SelfCheck ~ Selfish)
+
 
 
 

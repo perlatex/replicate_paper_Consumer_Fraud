@@ -19,7 +19,9 @@ d %>%
   )
 
 
+
 d %>% 
+  mutate(Cond = factor(Cond, level = c(1, -1))) %>% 
   rstatix::t_test(SelfCks ~ Cond)
 
 
