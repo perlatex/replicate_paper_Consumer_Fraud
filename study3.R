@@ -94,7 +94,8 @@ model <- '
   # Index of Moderated Mediation
   IndexOfModMed := a3*b
 
-  # Simple Slopes
+  # Simple Slopes 等价求偏导
+  # Simple Slopes of GSR on CEISStd is a2 + a3*Cond; GSR on Cond is a1 + a3*CEISStd
   aSSLow  := a2 + a3 * (-1)    
   aSSHigh := a2 + a3 * (1)     
    

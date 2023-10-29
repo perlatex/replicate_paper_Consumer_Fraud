@@ -1211,6 +1211,587 @@ fit %>%
 - STUDY 5B AND 5C
 
 
+---
+## Study 4
+
+```{r}
+library(tidyverse)
+
+d <- haven::read_sav("./data/Study 4.sav")
+```
+
+
+```{r, echo=FALSE}
+d %>% 
+  head(8) %>% 
+  flextable::flextable() %>% 
+  flextable::color(
+    j = c("Selfish", "Accident", "Embarrass", "SelfCheck", "ZEI"), 
+    color = "red",
+    part = "all"
+  ) %>% 
+  flextable::autofit()
+```
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result4_01.png")
+```
+
+]
+
+
+.pull-right[
+
+```{r, eval = FALSE}
+d %>% 
+  group_by(Selfish) %>% 
+  summarise(
+    n  = n(),
+    M  = mean(SelfCheck),
+    SD = sd(SelfCheck)
+  )
+```
+
+
+```{r, echo=FALSE}
+d %>% 
+  group_by(Selfish) %>% 
+  summarise(
+    n  = n(),
+    M  = mean(SelfCheck),
+    SD = sd(SelfCheck)
+  ) %>% 
+  flextable::flextable() %>% 
+  flextable::color(j = c("M", "SD"), color = "red") %>% 
+  flextable::autofit()
+```
+
+
+<br>
+
+```{r, eval = FALSE}
+d %>% 
+  rstatix::t_test(SelfCheck ~ Selfish)
+```
+
+```{r, echo=FALSE}
+d %>% 
+  rstatix::t_test(SelfCheck ~ Selfish) %>% 
+  flextable::flextable() %>% 
+  flextable::colformat_double(digits = 3) %>% 
+  flextable::colformat_int(j = "df") %>% 
+  flextable::color(j = c("statistic", "p"), color = "red") %>% 
+  flextable::autofit()
+```
+
+
+]
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result4_02.png")
+```
+
+]
+
+
+.pull-right[
+
+```{r}
+mod <- glm(Accident	~ Selfish*ZEI,
+           data = d,
+           family = binomial(link = "logit")
+)
+
+mod %>%
+  gtsummary::tbl_regression()  #<<
+```
+
+]
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result4_03.png")
+```
+
+]
+
+
+
+.pull-right[
+
+```{r, eval=FALSE}
+library(marginaleffects)
+
+mod %>%
+  marginaleffects::predictions(  #<<
+    newdata = datagrid(
+      Selfish = c(-1, 1),
+      ZEI     = c(-1, 1)
+    ),
+    type = "response"
+  ) %>%
+  as_tibble()
+```
+
+
+```{r, echo=FALSE}
+library(marginaleffects)
+
+mod %>%
+  marginaleffects::predictions(  #<<
+    newdata = datagrid(
+      Selfish = c(-1, 1),
+      ZEI     = c(-1, 1)
+    ),
+    type = "response"
+  ) %>%
+  as_tibble() %>% 
+  select(-std.error, -p.value, -s.value, -Accident) %>% 
+  flextable::flextable() %>% 
+  flextable::autofit() %>% 
+  flextable::color(j = c("estimate", "Selfish", "ZEI"), color = "red")
+```
+]
+
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/figure05.png")
+```
+
+]
+
+
+.pull-right[
+
+```{r, eval=FALSE}
+mod %>%
+  marginaleffects::predictions(
+    newdata = datagrid(
+      Selfish = c(-1, 1),
+      ZEI     = c(-1, 1)),
+    type = "response"
+  ) %>%
+  as_tibble() %>% 
+  mutate(
+    across(c(Selfish, ZEI), as.factor)
+  ) %>% 
+  ggplot(aes(x = Selfish, y = estimate)) +
+  geom_col(
+    aes(fill = ZEI), 
+    position = position_dodge(width = 0.8),
+    width = 0.7
+  )                           
+```
+
+
+```{r, echo=FALSE, fig.asp=0.518, fig.width = 5, out.width= "90%"}
+library(marginaleffects)
+
+mod %>%
+  marginaleffects::predictions(
+    newdata = datagrid(
+      Selfish = c(-1, 1),
+      ZEI     = c(-1, 1)
+    ),
+    type = "response"
+  ) %>%
+  as_tibble() %>% 
+  
+  mutate(across(c(Selfish, ZEI), as.factor)) %>% 
+  ggplot(aes(x = Selfish, y = estimate)) +
+  geom_col(
+    aes(fill = ZEI), 
+    position = position_dodge(width = 0.8),
+    width = 0.7
+  ) +
+  scale_x_discrete(
+    name   = "Selfishness Condition",
+    breaks = c(-1, 1),
+    labels = c("Low selfishness", "High selfishness")
+  ) +
+  scale_y_continuous(
+    name   = "Probability to commit insurance fraud",
+    limits = c(0, 0.5),
+    expand = c(0, 0)
+  ) +
+  scale_fill_manual(
+    name   = NULL,
+    values = c("gray80", "black"),
+    labels = c("Low EI(-1 SD)", "High EI(+1 SD)"),
+    guide  = guide_legend(reverse = TRUE)
+  ) +
+  theme_classic() +
+  theme(axis.ticks.x = element_blank())
+```
+
+
+]
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result4_04.png")
+```
+
+]
+
+
+.pull-right[
+```{r, eval=FALSE}
+mod %>% 
+  marginaleffects::slopes( #<<
+    variables = "ZEI",
+    by        = "Selfish",
+    type      = "link"
+  ) %>% 
+  as_tibble()
+
+```
+
+
+```{r, echo=FALSE}
+mod %>% 
+  marginaleffects::slopes( #<<
+    variables = "ZEI",
+    by        = "Selfish",
+    type      = "link"
+  ) %>% 
+  as_tibble() %>% 
+  select(1:7) %>% 
+  flextable::flextable() %>% 
+  flextable::autofit() %>% 
+  flextable::color(j = c("estimate", "statistic", "p.value"), color = "red")
+```
+
+
+]
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE, out.width= "85%"}
+knitr::include_graphics("./images/result4a_00.png")
+```
+
+]
+
+
+.pull-right[
+<br>
+```{r, echo=FALSE}
+knitr::include_graphics("./images/figure06.png")
+```
+]
+
+
+
+---
+## 
+
+.pull-left[
+
+.small[
+```{r}
+Mediation_function_binary_outcome <- function(data_used, i) {
+  # Sample a data
+  data_temp <- data_used[i, ]
+  
+  # a path
+  result_a <- lm(Embarrass ~ Selfish + ZEI + Selfish:ZEI, 
+                 data = data_temp)
+  
+  a0 <- result_a$coefficients[1]
+  a1 <- result_a$coefficients[2]
+  a2 <- result_a$coefficients[3]
+  a3 <- result_a$coefficients[4]
+  
+  # b path
+  result_b <- glm(
+    Accident ~ Embarrass + Selfish + ZEI + Selfish:ZEI, 
+    data = data_temp, 
+    family = binomial(link = "logit"))
+  
+  c0 <- result_b$coefficients[1]
+  b  <- result_b$coefficients[2]
+  c1 <- result_b$coefficients[3]
+  c2 <- result_b$coefficients[4]
+  c3 <- result_b$coefficients[5]
+
+
+  # Index of Moderated Mediation
+  IndexOfModMed <- a3 * b
+  
+  # Simple Slopes of Embarrass on ZEI
+  aSSLow  <- a2 + a3 * (-1)    
+  aSSHigh <- a2 + a3 * (1)     
+  
+  # Conditional Indirect Effects
+  abLow  <- aSSLow  * b
+  abHigh <- aSSHigh * b
+  
+  return(
+    c(a1, a2, a3, c1, c2, c3, b, 
+      IndexOfModMed, 
+      aSSLow, aSSHigh, abLow, abHigh)
+   ) 
+}
+
+```
+
+]
+]
+
+
+
+.pull-right[
+
+.small[
+```{r}
+library(boot)
+
+boot_mediation <- boot(d, 
+  Mediation_function_binary_outcome, 
+  R = 5000
+)
+
+xcoef <- c(
+  "a1", "a2", "a3", "c1", "c2", "c3", "b",
+  "IndexOfModMed", "aSSLow", "aSSHigh", "abLow", "abHigh"
+)
+
+fun <- function(i) {
+  aa <- boot::boot.ci(boot_mediation,
+    index = i,
+    conf = 0.95, type = "perc"
+  )
+
+  tibble(
+    mean      = aa$t0,
+    ci.lower  = aa$percent[4],
+    ci.higher = aa$percent[5]
+  )
+}
+
+res <- tibble(
+  idx = 1:12,
+  label = xcoef
+) %>%
+  rowwise() %>%
+  mutate(fun(idx))
+```
+
+]
+]
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE, out.width= "85%"}
+knitr::include_graphics("./images/result4a_01.png")
+```
+
+]
+
+
+.pull-right[
+
+
+```{r, echo=FALSE}
+res %>% 
+  flextable::flextable() %>% 
+  flextable::colformat_double(digits = 3) %>% 
+  flextable::color(
+    i = ~ label %in% c("a1", "a2", "a3"), 
+    color = "red"
+  )
+```
+
+]
+
+
+
+
+
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE, out.width= "85%"}
+knitr::include_graphics("./images/result4a_02.png")
+```
+
+]
+
+
+.pull-right[
+
+
+```{r, echo=FALSE}
+res %>% 
+  flextable::flextable() %>% 
+  flextable::colformat_double(digits = 3) %>% 
+  flextable::color(
+    i = ~ label %in% c("aSSLow", "aSSHigh"), 
+    color = "red"
+  )
+```
+
+]
+
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE, out.width= "85%"}
+knitr::include_graphics("./images/result4a_03.png")
+```
+
+]
+
+
+.pull-right[
+
+```{r, echo=FALSE}
+res %>% 
+  flextable::flextable() %>% 
+  flextable::colformat_double(digits = 3) %>% 
+  flextable::color(
+    i = ~ label %in% c("IndexOfModMed"), 
+    color = "red"
+  )
+```
+
+]
+
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE, out.width= "85%"}
+knitr::include_graphics("./images/result4a_04.png")
+```
+
+]
+
+
+.pull-right[
+
+
+```{r, echo=FALSE}
+res %>% 
+  flextable::flextable() %>% 
+  flextable::colformat_double(digits = 3) %>% 
+  flextable::color(
+    i = ~ label %in% c("c1", "c3"), 
+    color = "red"
+  )
+```
+
+
+]
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE, out.width= "85%"}
+knitr::include_graphics("./images/result4a_05.png")
+```
+
+]
+
+
+.pull-right[
+
+```{r, echo=FALSE}
+res %>% 
+  flextable::flextable() %>% 
+  flextable::colformat_double(digits = 3) %>% 
+  flextable::color(
+    i = ~ label %in% c("abLow", "abHigh"), 
+    color = "red"
+  ) 
+```
+
+
+]
+
+
+
+---
+## 我们接着看Study 5A
+
+<br>
+
+- STUDY 1
+- STUDY 2
+- STUDY 3
+- STUDY 4
+- .red[**STUDY 5A**]
+- STUDY 5B AND 5C
+
+
 
 ---
 class: center, middle
