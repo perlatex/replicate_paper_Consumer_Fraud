@@ -1808,6 +1808,929 @@ res %>%
 
 
 ---
+## Study 5A
+
+```{r}
+library(tidyverse)
+
+d <- haven::read_sav("./data/Study 5a.sav")
+```
+
+
+```{r, echo=FALSE}
+d %>% 
+  head() %>% 
+  flextable::flextable() %>% 
+  flextable::autofit()
+```
+
+
+- Embarrass : 0/1
+- Return    : 1/2
+- Age       :
+- Gender    :
+- EmbManip  : 
+- ZEI       :
+- ZSelfish  :
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5a_01.png")
+```
+
+]
+
+.pull-right[
+
+```{r, eval=FALSE}
+d %>% 
+  group_by(Embarrass) %>% 
+  summarise(
+    n  = n(),
+    M  = mean(EmbManip, na.rm = TRUE),
+    SD = sd(EmbManip, na.rm = TRUE)
+  ) 
+```
+
+```{r, echo=FALSE}
+d %>% 
+  group_by(Embarrass) %>% 
+  summarise(
+    n  = n(),
+    M  = mean(EmbManip, na.rm = TRUE),
+    SD = sd(EmbManip, na.rm = TRUE)
+  ) %>% 
+  flextable::flextable() %>% 
+  flextable::autofit() %>% 
+  flextable::color(j = "M", color = "red")
+```
+
+
+
+```{r, eval=FALSE}
+d %>% 
+  drop_na() %>% 
+  mutate(Embarrass = factor(
+    Embarrass, 
+    level = c(1, 0))
+  ) %>% 
+  rstatix::t_test(EmbManip ~ Embarrass)
+```
+
+```{r, echo=FALSE}
+d %>% 
+  drop_na() %>% 
+  mutate(Embarrass = factor(Embarrass, level = c(1, 0))) %>% 
+  rstatix::t_test(EmbManip ~ Embarrass) %>%  
+  flextable::flextable() %>% 
+  flextable::autofit() %>% 
+  flextable::colformat_double(digits = 3) %>%
+  flextable::color(j = c("statistic", "df", "p"), color = "red")
+```
+
+]
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5a_02.png")
+```
+
+]
+
+.pull-right[
+
+```{r, eval=FALSE}
+d %>% 
+  rstatix::cor_test(vars = c(ZEI, ZSelfish))
+```
+
+
+```{r, echo=FALSE}
+d %>% 
+  rstatix::cor_test(vars = c(ZEI, ZSelfish)) %>% 
+  flextable::flextable() %>% 
+  flextable::autofit() %>%
+  flextable::color(j = c("statistic", "cor", "p"), color = "red")
+```
+
+
+]
+
+
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5a_03.png")
+```
+
+]
+
+
+
+.pull-right[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5a_04.png")
+```
+]
+
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5a_04.png")
+```
+
+]
+
+
+.pull-right[
+
+.small[
+```{r}
+d1 <- d %>% mutate(Return = Return - 1)
+
+mod1 <- glm(Return	~ ZSelfish * ZEI * Embarrass,
+            data = d1,
+            family = binomial(link = "logit")
+)
+mod1 %>% 
+  flextable::as_flextable() #<<
+```
+]
+
+]
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5a_05.png")
+```
+
+]
+
+
+.pull-right[
+
+```{r, echo=FALSE}
+mod1 %>% 
+  flextable::as_flextable() %>% 
+  flextable::color(i = 8, color = "red")
+```
+
+
+
+]
+
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5a_06.png")
+```
+
+]
+
+.pull-right[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/figure07.png")
+```
+
+]
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/figure07.png")
+```
+
+]
+
+
+.pull-right[
+
+.small[
+```{r, eval=FALSE}
+library(marginaleffects)
+
+mod1 %>%
+  marginaleffects::predictions(
+    newdata = datagrid(
+      ZSelfish  = seq(-2, 2, by = 0.1), 
+      ZEI       = c(-1, 1),
+      Embarrass = c(0, 1)
+    ),
+    type = "response"
+  ) %>%
+  as_tibble() %>% 
+  
+  mutate(across(c(ZEI, Embarrass), as.factor)) %>% 
+  ggplot(aes(x = ZSelfish, y = estimate, group = ZEI)) +
+  geom_line(aes(linetype = ZEI), linewidth = 2)
+```
+]
+
+
+```{r, echo=FALSE}
+library(marginaleffects)
+
+mod1 %>%
+  marginaleffects::predictions(
+    newdata = datagrid(
+      ZSelfish  = seq(-2, 2, by = 0.1), 
+      ZEI       = c(-1, 1),
+      Embarrass = c(0, 1)
+    ),
+    type = "response"
+  ) %>%
+  as_tibble() %>% 
+  
+  mutate(across(c(ZEI, Embarrass), as.factor)) %>% 
+  ggplot(aes(x = ZSelfish, y = estimate, group = ZEI)) +
+  geom_line(aes(linetype = ZEI), linewidth = 2) +
+  scale_linetype_manual(
+    name = NULL,
+    values = c("dotted", "solid"),
+    labels = c("Low EI", "High EI"),
+    guide = guide_legend(reverse = TRUE)
+  ) +
+  scale_x_continuous(
+    name   = "Selfishness",
+    breaks = c(-2, 2),
+    labels = c("-2SD", "+2 SD")
+  ) +
+  scale_y_continuous(
+    name   = "Probability of lying about product Damage",
+    limits = c(0, 0.8),
+    expand = c(0, 0)
+  ) +
+  facet_wrap(
+    vars(Embarrass), 
+    labeller = labeller(Embarrass = c("0" = "Control Condition", 
+                                      "1" =  "High Embarrassment"))
+  ) +
+  theme_minimal() +
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.position = "bottom"
+  )
+
+```
+
+]
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5a_07.png")
+```
+
+]
+
+.pull-right[
+
+.small[
+```{r, eval=FALSE}
+d2 <- d %>%
+  mutate(
+    ZSelfish_x_ZEI           = ZSelfish * ZEI,
+    ZSelfish_x_Embarrass     = ZSelfish * Embarrass,
+    ZEI_x_Embarrass          = ZEI * Embarrass
+  ) %>%
+  mutate(Return = Return - 1)
+
+mod2 <- glm(Return ~ ZSelfish + ZEI + Embarrass + ZSelfish_x_ZEI + 
+             ZSelfish_x_Embarrass + ZEI_x_Embarrass + 
+             ZSelfish_x_ZEI:Embarrass,
+           data = d2,
+           family = binomial(link = "logit")
+)
+
+mod2 %>% 
+  marginaleffects::avg_slopes(
+    variables = "ZSelfish_x_ZEI",
+    by        = "Embarrass",
+    type      = "link"
+  ) %>% 
+  as_tibble()
+```
+]
+
+
+
+```{r, echo=FALSE}
+d2 <- d %>%
+  mutate(
+    ZSelfish_x_ZEI           = ZSelfish * ZEI,
+    ZSelfish_x_Embarrass     = ZSelfish * Embarrass,
+    ZEI_x_Embarrass          = ZEI * Embarrass
+  ) %>%
+  mutate(Return = Return - 1)
+
+mod2 <- glm(Return ~ ZSelfish + ZEI + Embarrass + ZSelfish_x_ZEI + 
+             ZSelfish_x_Embarrass + ZEI_x_Embarrass + 
+             ZSelfish_x_ZEI:Embarrass,
+           data = d2,
+           family = binomial(link = "logit")
+)
+
+mod2 %>% 
+  marginaleffects::avg_slopes(
+    variables = "ZSelfish_x_ZEI",
+    by        = "Embarrass",
+    type      = "link"
+  ) %>% 
+  as_tibble() %>% 
+  select(1:7) %>% 
+  flextable::flextable() %>% 
+  flextable::autofit() %>% 
+  flextable::color(j = c("estimate", "statistic", "p.value"), color = "red")
+```
+
+
+]
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5a_08.png")
+```
+
+]
+
+.pull-right[
+
+```{r}
+library(interactions)
+
+mod1 %>%
+  interactions::johnson_neyman(
+    pred = "ZEI",
+    modx = "ZSelfish",
+    alpha = 0.05
+  )
+```
+
+]
+
+
+
+---
+## 我们接着看Study 5B
+
+<br>
+
+- STUDY 1
+- STUDY 2
+- STUDY 3
+- STUDY 4
+- STUDY 5A
+- .red[STUDY 5B] AND 5C
+
+
+
+
+---
+## Study 5B
+
+```{r}
+library(tidyverse)
+
+d <- haven::read_sav("./data/Study5b.sav")
+```
+
+
+```{r, echo=FALSE}
+d %>% 
+  head() %>% 
+  flextable::flextable() %>% 
+  flextable::autofit()
+```
+
+
+- Cond         : 0 = control / 1 = Guilt
+- Return       : 1 = Kepp / 2 = Return
+- ZCEIS        : EI
+- ZSF          : selfishness
+- GuiltMC_All  : guilt manipulation check
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE, out.width = "90%"}
+knitr::include_graphics("./images/result5b_01.png")
+```
+
+]
+
+.pull-right[
+
+.small[
+```{r, eval=FALSE}
+d %>% 
+  summarise(
+    n  = n(),
+    M  = mean(GuiltMC_All, na.rm = TRUE),
+    SD = sd(GuiltMC_All, na.rm = TRUE),
+    .by = Cond
+  ) 
+```
+]
+
+
+```{r, echo=FALSE}
+d %>% 
+  summarise(
+    n  = n(),
+    M  = mean(GuiltMC_All, na.rm = TRUE),
+    SD = sd(GuiltMC_All, na.rm = TRUE),
+    .by = Cond
+  ) %>% 
+  flextable::flextable() %>% 
+  flextable::fontsize(size = 10, part = "all") %>% 
+  flextable::line_spacing(space = 0.8, part = "body") %>% 
+  flextable::autofit() %>% 
+  flextable::color(j = "M", color = "red")
+```
+
+
+.small[
+```{r, eval=FALSE}
+d %>% 
+  mutate(Cond = factor(Cond, level = c(1, 0))
+  ) %>% 
+  rstatix::t_test(GuiltMC_All ~ Cond)
+```
+]
+
+
+```{r, echo=FALSE}
+d %>% 
+  mutate(Cond = factor(Cond, level = c(1, 0))) %>% 
+  rstatix::t_test(GuiltMC_All ~ Cond) %>%  
+  flextable::flextable() %>% 
+  flextable::fontsize(size = 10, part = "all") %>% 
+  flextable::line_spacing(space = 0.8, part = "body") %>% 
+  flextable::autofit() %>% 
+  flextable::colformat_double(digits = 3) %>%
+  flextable::color(j = c("statistic", "df", "p"), color = "red")
+```
+
+.small[
+```{r, eval=FALSE}
+d %>% 
+  rstatix::cor_test(vars = c(ZCEIS, ZSF))
+```
+]
+
+```{r, echo=FALSE}
+d %>% 
+  rstatix::cor_test(vars = c(ZCEIS, ZSF)) %>% 
+  flextable::flextable() %>% 
+  flextable::fontsize(size = 10, part = "all") %>% 
+  flextable::line_spacing(space = 0.8, part = "body") %>% 
+  flextable::autofit() %>% 
+  flextable::colformat_double(digits = 3) %>%
+  flextable::color(j = c("statistic", "cor", "p"), color = "red")
+```
+
+]
+
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE, out.width = "90%"}
+knitr::include_graphics("./images/result5b_02.png")
+```
+
+]
+
+
+
+.pull-right[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5b_03.png")
+```
+]
+
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5b_03.png")
+```
+
+]
+
+
+.pull-right[
+
+.small[
+```{r}
+d1 <- d %>% mutate(Return = Return - 1)
+
+mod1 <- glm(Return ~ ZSF * ZCEIS * Cond,
+           data = d1,
+           family = binomial(link = "logit")
+)
+
+
+mod1 %>% 
+  flextable::as_flextable() #<<
+```
+]
+
+]
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE, out.width = "90%"}
+knitr::include_graphics("./images/result5b_04.png")
+```
+
+]
+
+
+.pull-right[
+
+```{r, echo=FALSE}
+mod1 %>% 
+  flextable::as_flextable() %>% 
+  flextable::color(i = c(5, 8), color = "red")
+```
+
+
+
+]
+
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE, out.width = "90%"}
+knitr::include_graphics("./images/result5b_05.png")
+```
+
+]
+
+.pull-right[
+
+```{r}
+library(interactions)
+
+mod1 %>%
+  interactions::johnson_neyman(
+    pred = "ZCEIS",
+    modx = "ZSF",
+    alpha = 0.05
+  )
+```
+
+]
+
+
+
+
+
+
+---
+## 我们接着看Study 5C
+
+<br>
+
+- STUDY 1
+- STUDY 2
+- STUDY 3
+- STUDY 4
+- STUDY 5A
+- STUDY 5B AND .red[5C]
+
+
+
+
+
+---
+## Study 5C
+
+```{r}
+library(tidyverse)
+
+d <- haven::read_sav("./data/Study 5c.sav")
+```
+
+
+```{r, echo=FALSE}
+d %>% 
+  head() %>% 
+  flextable::flextable() %>% 
+  flextable::autofit()
+```
+
+
+- Return       : 1 = Kepp / 2 = Return
+- ShameMC      : 
+- Cond         : 0 = control / 1 = Guilt
+- ZCEIS        : EI
+- ZSF          : selfishness
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE, out.width = "90%"}
+knitr::include_graphics("./images/result5c_00.png")
+```
+
+]
+
+.pull-right[
+
+```{r, eval=FALSE}
+d %>% 
+  summarise(
+    n  = n(),
+    M  = mean(ShameMC, na.rm = TRUE),
+    SD = sd(ShameMC, na.rm = TRUE),
+    .by = Cond
+  ) %>% 
+  flextable::flextable()
+```
+
+```{r, echo=FALSE}
+d %>% 
+  summarise(
+    n  = n(),
+    M  = mean(ShameMC, na.rm = TRUE),
+    SD = sd(ShameMC, na.rm = TRUE),
+    .by = Cond
+  ) %>% 
+  flextable::flextable() %>% 
+  flextable::autofit() %>% 
+  flextable::color(j = "M", color = "red")
+```
+
+
+
+```{r, eval=FALSE}
+d %>% 
+  mutate(Cond = factor(Cond, 
+           level = c(1, 0))
+  ) %>% 
+   rstatix::t_test(ShameMC ~ Cond)
+```
+
+```{r, echo=FALSE}
+d %>% 
+  mutate(Cond = factor(Cond, level = c(1, 0))) %>% 
+  rstatix::t_test(ShameMC ~ Cond) %>% 
+  flextable::flextable() %>% 
+  flextable::autofit() %>% 
+  flextable::colformat_double(digits = 3) %>%
+  flextable::color(j = c("statistic", "df", "p"), color = "red")
+```
+
+]
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5c_01.png")
+```
+
+]
+
+
+
+.pull-right[
+
+```{r, eval=FALSE}
+d %>% 
+  rstatix::cor_test(vars = c(ZCEIS, ZSF))
+```
+
+
+```{r, echo=FALSE}
+d %>% 
+  rstatix::cor_test(vars = c(ZCEIS, ZSF)) %>% 
+  flextable::flextable() %>% 
+  flextable::autofit() %>% 
+  flextable::colformat_double(digits = 3) %>%
+  flextable::color(j = c("statistic", "cor", "p"), color = "red")
+```
+
+]
+
+
+
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5c_02.png")
+```
+
+]
+
+
+
+.pull-right[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5c_03.png")
+```
+]
+
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5c_03.png")
+```
+
+]
+
+
+.pull-right[
+
+.small[
+```{r}
+d1 <- d %>% mutate(Return = Return - 1)
+
+mod1 <- glm(Return	~ ZSF * ZCEIS * Cond,
+            data = d1,
+            family = binomial(link = "logit")
+)
+
+
+mod1 %>% 
+  flextable::as_flextable() #<<
+```
+]
+
+]
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5c_04.png")
+```
+
+]
+
+
+.pull-right[
+
+```{r, echo=FALSE}
+mod1 %>% 
+  flextable::as_flextable() %>% 
+  flextable::color(i = c(5, 8), color = "red")
+```
+
+
+
+]
+
+
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result5c_05.png")
+```
+
+]
+
+.pull-right[
+
+```{r}
+library(interactions)
+
+mod1 %>%
+  interactions::johnson_neyman(
+    pred = "ZCEIS",
+    modx = "ZSF",
+    alpha = 0.05
+  )
+```
+
+]
+
+
+
+
+
+
+---
 class: center, middle
 
 # 感谢 R 和 Stan 语言之美!
