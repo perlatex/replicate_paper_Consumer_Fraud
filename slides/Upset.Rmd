@@ -38,7 +38,7 @@ options(
 ---
 class: center, middle
 
-# 课件代码
+# 复现代码
 <https://github.com/perlatex/replicate_paper_Consumer_Fraud>
 
 
@@ -951,6 +951,7 @@ mod %>%
 
 
 
+
 ---
 ## 
 
@@ -968,6 +969,28 @@ knitr::include_graphics("./images/result3a_00.png")
 ```{r, echo=FALSE}
 knitr::include_graphics("./images/figure04.png")
 ```
+]
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE, out.width= "85%"}
+knitr::include_graphics("./images/result3a_00.png")
+```
+
+]
+
+
+.pull-right[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/figure04.png")
+```
+
 .small[
 ```{r}
 library(lavaan)
@@ -2627,8 +2650,7 @@ d %>%
     M  = mean(ShameMC, na.rm = TRUE),
     SD = sd(ShameMC, na.rm = TRUE),
     .by = Cond
-  ) %>% 
-  flextable::flextable()
+  ) 
 ```
 
 ```{r, echo=FALSE}
@@ -2651,7 +2673,7 @@ d %>%
   mutate(Cond = factor(Cond, 
            level = c(1, 0))
   ) %>% 
-   rstatix::t_test(ShameMC ~ Cond)
+  rstatix::t_test(ShameMC ~ Cond)
 ```
 
 ```{r, echo=FALSE}
