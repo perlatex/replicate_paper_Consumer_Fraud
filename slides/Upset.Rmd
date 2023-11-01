@@ -36,7 +36,15 @@ options(
 
 
 ---
-## 论文
+class: center, middle
+
+# 课件代码
+<https://github.com/perlatex/replicate_paper_Consumer_Fraud>
+
+
+
+---
+## 我们的目标论文
 <br>
 ```{r, echo=FALSE}
 knitr::include_graphics("./images/paper_cover.png")
@@ -201,9 +209,31 @@ knitr::include_graphics("./images/result1_03.png")
 
 .pull-right[
 
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result1_03a.png")
+```
+
+]
+
+
+
+---
+## 
+
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result1_03a.png")
+```
+
+]
+
+
+.pull-right[
+
 ```{r, eval=FALSE}
 library(marginaleffects)
-
 mod %>% 
   marginaleffects::predictions(     #<<
     newdata = datagrid(SelfManip = c(-1, 1), 
@@ -247,10 +277,12 @@ knitr::include_graphics("./images/result1_03a.png")
 .pull-right[
 
 ```{r, eval=FALSE}
+library(marginaleffects)
 mod %>% 
-  marginaleffects::predictions(
+  marginaleffects::predictions(     #<<
     newdata = datagrid(SelfManip = c(-1, 1), 
-                       ZEI       = c(-1, 1))
+                       ZEI       = c(-1, 1)),
+    type    = "response"
   ) %>% 
   as_tibble() %>% 
   mutate(
@@ -262,7 +294,7 @@ mod %>%
   )                                                #<<
 ```
 
-```{r, echo=FALSE, fig.asp=0.9, fig.width = 5, out.width= "60%"}
+```{r, echo=FALSE, fig.asp=0.8, fig.width = 5, out.width= "60%"}
 library(marginaleffects)
 mod %>% 
   marginaleffects::predictions(
@@ -416,7 +448,7 @@ d %>%
   rstatix::cor_test(vars = c(ZEI, ZSelfish)) %>% 
   flextable::flextable() %>% 
   flextable::autofit() %>% 
-  flextable::color(j = "p", color = "red")
+  flextable::color(j = c("cor", "p"), color = "red")
 ```
 ]
 
@@ -465,19 +497,38 @@ knitr::include_graphics("./images/result2_03.png")
 
 ]
 
+.pull-right[
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result2_03a.png")
+```
+]
+
+
+
+---
+## 
+
+
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result2_03a.png")
+```
+
+]
+
 
 
 .pull-right[
 
 ```{r, eval=FALSE}
 library(marginaleffects)
-
 mod %>% 
   marginaleffects::predictions(    #<<
     newdata = datagrid(
       ZSelfish = seq(-2, 2, by = 0.1), 
-      ZEI      = c(-1, 1)
-    ),
+      ZEI      = c(-1, 1) ),
     type    = "response"
   ) %>% 
   as_tibble()
@@ -526,13 +577,14 @@ knitr::include_graphics("./images/result2_03a.png")
 .pull-right[
 
 ```{r, eval=FALSE}
-mod %>%
-  marginaleffects::predictions(
+library(marginaleffects)
+mod %>% 
+  marginaleffects::predictions(    #<<
     newdata = datagrid(
-      ZSelfish = seq(-2, 2, by = 0.1),
-      ZEI      = c(-1, 1)),
-    type = "response"
-  ) %>%
+      ZSelfish = seq(-2, 2, by = 0.1), 
+      ZEI      = c(-1, 1) ),
+    type    = "response"
+  ) %>% 
   as_tibble() %>%
   mutate(across(ZEI, as.factor)) %>%
   ggplot(aes(x = ZSelfish, y = estimate,   #<<
@@ -730,9 +782,31 @@ knitr::include_graphics("./images/result3_03.png")
 
 .pull-right[
 
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result3_03a.png")
+```
+
+]
+
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/result3_03a.png")
+```
+
+]
+
+
+
+.pull-right[
+
 ```{r, eval=FALSE}
 library(marginaleffects)
-
 mod %>% 
   marginaleffects::predictions(   #<<
     newdata = datagrid(Cond    = c(-1, 1), 
@@ -778,8 +852,9 @@ knitr::include_graphics("./images/result3_03a.png")
 .pull-right[
 
 ```{r, eval=FALSE}
+library(marginaleffects)
 mod %>% 
-  marginaleffects::predictions(
+  marginaleffects::predictions(   #<<
     newdata = datagrid(Cond    = c(-1, 1), 
                        CEISStd = c(-1, 1))
   ) %>% 
@@ -1351,18 +1426,35 @@ knitr::include_graphics("./images/result4_03.png")
 ]
 
 
+.pull-right[
+```{r, echo=FALSE}
+knitr::include_graphics("./images/figure05.png")
+```
+]
+
+
+---
+## 
+
+.pull-left[
+
+```{r, echo=FALSE}
+knitr::include_graphics("./images/figure05.png")
+```
+
+]
+
+
 
 .pull-right[
 
 ```{r, eval=FALSE}
 library(marginaleffects)
-
 mod %>%
   marginaleffects::predictions(  #<<
     newdata = datagrid(
       Selfish = c(-1, 1),
-      ZEI     = c(-1, 1)
-    ),
+      ZEI     = c(-1, 1)),
     type = "response"
   ) %>%
   as_tibble()
@@ -1407,8 +1499,9 @@ knitr::include_graphics("./images/figure05.png")
 .pull-right[
 
 ```{r, eval=FALSE}
+library(marginaleffects)
 mod %>%
-  marginaleffects::predictions(
+  marginaleffects::predictions(  #<<
     newdata = datagrid(
       Selfish = c(-1, 1),
       ZEI     = c(-1, 1)),
@@ -1819,19 +1912,19 @@ d <- haven::read_sav("./data/Study 5a.sav")
 
 ```{r, echo=FALSE}
 d %>% 
-  head() %>% 
+  head(4) %>% 
   flextable::flextable() %>% 
   flextable::autofit()
 ```
 
 
-- Embarrass : 0/1
-- Return    : 1/2
-- Age       :
-- Gender    :
-- EmbManip  : 
-- ZEI       :
-- ZSelfish  :
+- **Embarrass** : 0/1
+- **Return**    : 1/2
+- **Age**       :
+- **Gender**    :
+- **EmbManip**  : 
+- **ZEI**       :
+- **ZSelfish**  :
 
 
 ---
@@ -1975,7 +2068,7 @@ knitr::include_graphics("./images/result5a_04.png")
 ```{r}
 d1 <- d %>% mutate(Return = Return - 1)
 
-mod1 <- glm(Return	~ ZSelfish * ZEI * Embarrass,
+mod1 <- glm(Return ~ ZSelfish * ZEI * Embarrass,
             data = d1,
             family = binomial(link = "logit")
 )
@@ -2262,11 +2355,11 @@ d %>%
 ```
 
 
-- Cond         : 0 = control / 1 = Guilt
-- Return       : 1 = Kepp / 2 = Return
-- ZCEIS        : EI
-- ZSF          : selfishness
-- GuiltMC_All  : guilt manipulation check
+- **Cond**         : 0 = control / 1 = Guilt
+- **Return**       : 1 = Kepp / 2 = Return
+- **ZCEIS**        : EI
+- **ZSF**          : selfishness
+- **GuiltMC_All**  : guilt manipulation check
 
 
 ---
@@ -2507,11 +2600,11 @@ d %>%
 ```
 
 
-- Return       : 1 = Kepp / 2 = Return
-- ShameMC      : 
-- Cond         : 0 = control / 1 = Guilt
-- ZCEIS        : EI
-- ZSF          : selfishness
+- **Return**       : 1 = Kepp / 2 = Return
+- **ShameMC**      : 
+- **Cond**         : 0 = control / 1 = Guilt
+- **ZCEIS**        : EI
+- **ZSF**          : selfishness
 
 
 ---
