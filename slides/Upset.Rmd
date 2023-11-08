@@ -319,9 +319,11 @@ mod %>%
     name =  "Probability to Lie in contest",
     limits = c(0, 0.4),
     expand = c(0, 0)
-  ) +
+  )  +
   scale_fill_manual(
-    values = c("gray85", "black")
+    values = c("gray85", "black"),
+    labels = c("Low EI(-1 SD)", "High EI(+1 SD)"),
+    guide = guide_legend(reverse = TRUE)
   ) +
   theme_classic()
 ```

@@ -120,7 +120,7 @@ mod %>%
   ) +
   scale_fill_manual(
     values = c("gray85", "black"),
-    labels = c("Low EI", "High EI"),
+    labels = c("Low EI(-1 SD)", "High EI(+1 SD)"),
     guide = guide_legend(reverse = TRUE)
   ) +
   theme_classic()
