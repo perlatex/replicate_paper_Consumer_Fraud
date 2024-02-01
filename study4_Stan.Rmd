@@ -184,3 +184,84 @@ draws %>%
   flextable::autofit()
 ```
 
+
+# brms using non-linear syntax
+
+```{r}
+library(brms)
+
+mod <- brm(
+    bf(Embarrass ~ Intercept + a1*Selfish + a2*ZEI + a3*Selfish*ZEI,  
+       Intercept ~ 1,
+       a1 ~ 1,
+       a2 ~ 1,
+       a3 ~ 1,
+       nl = TRUE,
+       family = gaussian(link = "identity")
+      ) +
+    bf(Accident ~ Intercept + c1*Selfish + c2*ZEI + c3*Selfish*ZEI + b*Embarrass, 
+       Intercept ~ 1,
+       c1 ~ 1,
+       c2 ~ 1,
+       c3 ~ 1,
+       b  ~ 1,
+       nl = TRUE,
+       family = bernoulli(link = "logit")
+    ) +
+    set_rescor(FALSE),
+    data   = d,
+    iter = 2000, warmup = 1000, chains = 4, cores = 4
+)
+```
+
+
+
+```{r}
+print(mod, digits = 3)
+
+fixef(mod)
+```
+
+
+```{r}
+draws <- as_draws_df(mod)
+
+tbl_orders <- c("a1", "a2", "a3", 
+                "c1", "c2", "c3",
+                "b",
+                "IndexOfModMed", "abLow", "abHigh")
+
+draws %>% 
+  transmute(
+    a1     = b_Embarrass_a1_Intercept,
+    a2     = b_Embarrass_a2_Intercept,
+    a3     = b_Embarrass_a3_Intercept,
+    c1     = b_Accident_c1_Intercept,
+    c2     = b_Accident_c2_Intercept,
+    c3     = b_Accident_c3_Intercept,
+    b      = b_Accident_b_Intercept 
+  ) %>% 
+  mutate(
+    IndexOfModMed     = a3 * b,
+    abLow             = (a1 + a3 * (-1)) * b,
+    abHigh            = (a1 + a3 * ( 1)) * b
+  ) %>% 
+  pivot_longer(
+    cols          = everything(),
+    names_to      = "item",
+    values_to     = "value"
+  ) %>% 
+  group_by(item) %>% 
+  ggdist::mean_hdi(.width = .95) %>% 
+  arrange(factor(item, levels = tbl_orders)) %>% 
+  flextable::flextable() %>% 
+  flextable::colformat_double(digits = 3) %>% 
+  flextable::line_spacing(space = 0.7) %>% 
+  flextable::color(j = "value", color = "red") %>% 
+  flextable::autofit()
+```
+
+# 参考
+
+- <https://bookdown.org/content/4857/markov-chain-monte-carlo.html#easy-hmc-ulam-brm>
+- <https://discourse.mc-stan.org/t/brm-syntax-for-guessing-probability-with-interaction-terms/16443/3>
