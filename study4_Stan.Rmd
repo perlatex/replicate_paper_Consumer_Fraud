@@ -37,15 +37,13 @@ theme_set(bayesplot::theme_default(base_size = 14))
 
 # 数据
 
-这里是小学生50米短跑的成绩
-
 ```{r}
 d <- haven::read_sav("./data/Study 4.sav")
 
 d
 ```
 
-
+# stan
 
 ```{r, results='hide'}
 stan_program <- write_stan_file("
@@ -88,11 +86,11 @@ generated quantities {
   real abHigh;
 
   // Index of Moderated Mediation
-  IndexOfModMed = a[3] * b;
+  IndexOfModMed = a[4] * b;
 
   // Simple Slopes
-  aSSLow  = a[2] + a[3] * (-1);  
-  aSSHigh = a[2] + a[3] * (1) ;   
+  aSSLow  = a[2] + a[4] * (-1);  
+  aSSHigh = a[2] + a[4] * (1) ;   
    
   // Conditional Indirect Effects
   abLow  = aSSLow * b;
@@ -118,11 +116,71 @@ fit_stan <- mod_stan$sample(data = stan_data)
 
 
 ```{r}
-fit_stan$summary(c("a[1]", "a[2]", "a[3]", "c[1]", "c[2]", "c[3]", "b",
+fit_stan$summary(c("a[2]", "a[3]", "a[4]", "c[2]", "c[3]", "c[4]", "b",
                    "IndexOfModMed", "aSSLow", "aSSHigh", "abLow", "abHigh")) %>% 
   flextable::flextable() %>% 
   flextable::autofit()
 ```
 
 
+# brms
+```{r}
+library(brms)
+
+mod <- brm(
+    bf(Embarrass ~ Selfish + ZEI + Selfish:ZEI,             family = gaussian()) +
+    bf(Accident  ~ Selfish + ZEI + Selfish:ZEI + Embarrass, family = bernoulli(link = "logit")) +
+    set_rescor(FALSE),
+  data   = d,
+  chains = 4,
+  cores  = 4
+)
+```
+
+
+
+```{r}
+print(mod, digits = 3)
+
+fixef(mod)
+```
+
+
+```{r}
+draws <- as_draws_df(mod)
+
+tbl_orders <- c("a1", "a2", "a3", 
+                "c1", "c2", "c3",
+                "b",
+                "IndexOfModMed", "abLow", "abHigh")
+
+draws %>% 
+  transmute(
+    a1     = `b_Embarrass_Selfish`,
+    a2     = `b_Embarrass_ZEI`,
+    a3     = `b_Embarrass_Selfish:ZEI`,
+    c1     = `b_Accident_Selfish`,
+    c2     = `b_Accident_ZEI`,
+    c3     = `b_Accident_Selfish:ZEI`,
+    b      = `b_Accident_Embarrass` 
+  ) %>% 
+  mutate(
+    IndexOfModMed     = a3 * b,
+    abLow             = (a1 + a3 * (-1)) * b,
+    abHigh            = (a1 + a3 * ( 1)) * b
+  ) %>% 
+  pivot_longer(
+    cols          = everything(),
+    names_to      = "item",
+    values_to     = "value"
+  ) %>% 
+  group_by(item) %>% 
+  ggdist::mean_hdi(.width = .95) %>% 
+  arrange(factor(item, levels = tbl_orders)) %>% 
+  flextable::flextable() %>% 
+  flextable::colformat_double(digits = 3) %>% 
+  flextable::line_spacing(space = 0.7) %>% 
+  flextable::color(j = "value", color = "red") %>% 
+  flextable::autofit()
+```
 
