@@ -129,11 +129,15 @@ model <- '
 '
 
 
-d1 <- d %>% mutate(Accident = as.factor(Accident))
+d_ordered <- d %>% 
+  mutate(across(Accident, ordered))
+d_ordered
+
 fit <- sem(model, 
-           data      =  d1, 
-           link      = "probit"
-)
+           data      = d_ordered, 
+           estimator = "WLSMV", 
+           mimic     = "Mplus")
+
 
 
 
